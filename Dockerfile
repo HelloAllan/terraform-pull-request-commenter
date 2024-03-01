@@ -14,7 +14,7 @@ RUN apk add \
     --quiet \
     bash=~5 \
     curl=~8 \
-    jq=~1
+    jq=~1 && apk add --upgrade curl
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
