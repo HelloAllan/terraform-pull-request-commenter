@@ -1,22 +1,22 @@
-name: 'Terraform Pull Request Commenter'
-description: 'Adds opinionated comments to a PR from Terraform fmt/init/plan output.'
-author: 'Leonard Sheng Sheng Lee'
+name: "Terraform Pull Request Commenter Curl Patched"
+description: "Adds opinionated comments to a PR from Terraform fmt/init/plan output."
+author: "Allan Dalton"
 branding:
-  icon: 'git-pull-request'
-  color: 'purple'
+  icon: "git-pull-request"
+  color: "purple"
 inputs:
   commenter_type:
-    description: 'The type of comment. Options: [fmt, init, plan].'
+    description: "The type of comment. Options: [fmt, init, plan]."
     required: true
   commenter_input:
-    description: 'The comment to post from a previous step output.'
+    description: "The comment to post from a previous step output."
     required: true
   commenter_exitcode:
-    description: 'The exit code from a previous step output.'
+    description: "The exit code from a previous step output."
     required: true
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
   args:
     - ${{ inputs.commenter_type }}
     - ${{ inputs.commenter_input }}
