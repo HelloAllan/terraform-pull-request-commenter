@@ -15,9 +15,13 @@ inputs:
     description: "The exit code from a previous step output."
     required: true
 runs:
-  using: "docker"
-  image: "Dockerfile"
-  args:
-    - ${{ inputs.commenter_type }}
-    - ${{ inputs.commenter_input }}
-    - ${{ inputs.commenter_exitcode }}
+  using: "composite"
+  steps:
+    - name: Write input to file
+      shell: bash
+      run: |
+        echo "${{ inputs.commenter_input }}" > /tmp/terraform_output.txt
+    - name: Run commenter
+      uses: docker://ghcr.io/helloallan/terraform-pull-request-commenter:latest
+      with:
+        args: ${{ inputs.commenter_type }} /tmp/terraform_output.txt ${{ inputs.commenter_exitcode }}
