@@ -17,16 +17,38 @@ Support (for now) is [limited to Linux](https://help.github.com/en/actions/creat
 
 ## Usage
 
-This action can only be run after a Terraform `fmt`, `init`, `plan` or `validate` has completed, and the output has been captured. Terraform rarely writes to `stdout` and `stderr` in the same action, so we concatenate the `commenter_input`:
+This action can only be run after a Terraform `fmt`, `init`, `plan` or `validate` has completed, and the output has been captured. For large outputs (especially from `plan`), it's recommended to write the output to a file first:
 
 ```yaml
-- uses: sheeeng/terraform-pull-request-commenter@v1
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+- name: Terraform Plan
+  id: plan
+  run: |
+    terraform plan -out workspace.plan > plan.txt
+
+- name: Post Plan
+  if: always() && github.ref != 'refs/heads/master' && (steps.plan.outcome == 'success' || steps.plan.outcome == 'failure')
+  uses: sheeeng/terraform-pull-request-commenter@v1
   with:
-    commenter_type: fmt/init/plan/validate # Choose one
-    commenter_input: ${{ format('{0}{1}', steps.step_id.outputs.stdout, steps.step_id.outputs.stderr) }}
-    commenter_exitcode: ${{ steps.step_id.outputs.exitcode }}
+    commenter_type: plan
+    commenter_input: ${{ format('{0}{1}', steps.plan.outputs.stdout, steps.plan.outputs.stderr) }}
+    commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
+```
+
+For smaller outputs, you can use the output directly:
+
+```yaml
+- name: Terraform Format
+  id: fmt
+  run: terraform fmt -check -recursive
+  continue-on-error: true
+
+- name: Post Format
+  if: always() && github.ref != 'refs/heads/master' && (steps.fmt.outcome == 'success' || steps.fmt.outcome == 'failure')
+  uses: sheeeng/terraform-pull-request-commenter@v1
+  with:
+    commenter_type: fmt
+    commenter_input: ${{ format('{0}{1}', steps.fmt.outputs.stdout, steps.fmt.outputs.stderr) }}
+    commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
 ```
 
 ### Inputs
@@ -34,7 +56,7 @@ This action can only be run after a Terraform `fmt`, `init`, `plan` or `validate
 | Name                 | Requirement | Description                                                       |
 | -------------------- | ----------- | ----------------------------------------------------------------- |
 | `commenter_type`     | _required_  | The type of comment. Options: [`fmt`, `init`, `plan`, `validate`] |
-| `commenter_input`    | _required_  | The comment to post from a previous step output.                  |
+| `commenter_input`    | _required_  | The comment to post from a previous step output. For large outputs, write to a file first and pass the file path. |
 | `commenter_exitcode` | _required_  | The exit code from a previous step output.                        |
 
 ### Environment Variables

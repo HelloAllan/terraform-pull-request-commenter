@@ -17,6 +17,7 @@ RUN apk add \
     jq=~1 && apk add --upgrade curl
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY write-input.sh /write-input.sh
+RUN chmod +x /entrypoint.sh /write-input.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

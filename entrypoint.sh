@@ -29,17 +29,12 @@ fi
 ##################
 # Arg 1 is command
 COMMAND=$1
-# Arg 2 is input file path
-INPUT_FILE=$2
+# Arg 2 is input. Write to file to handle large inputs
+INPUT_RAW="$2"
+INPUT_FILE=$(/write-input.sh "$INPUT_RAW")
+INPUT=$(cat "$INPUT_FILE" | sed 's/\x1b\[[0-9;]*m//g')
 # Arg 3 is the Terraform CLI exit code
 EXIT_CODE=$3
-
-# Read input from file
-if [[ ! -f "$INPUT_FILE" ]]; then
-    echo "Input file $INPUT_FILE does not exist."
-    exit 1
-fi
-INPUT=$(cat "$INPUT_FILE" | sed 's/\x1b\[[0-9;]*m//g')
 
 # Read TF_WORKSPACE environment variable or use "default"
 WORKSPACE=${TF_WORKSPACE:-default}

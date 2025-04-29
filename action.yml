@@ -1,5 +1,5 @@
 name: "Terraform Pull Request Commenter Curl Patched"
-description: "Adds opinionated comments to a PR from Terraform fmt/init/plan output."
+description: "Adds opinionated comments to a PR from Terraform fmt/init/plan output. For large outputs, write to a file first and pass the file path."
 author: "Allan Dalton"
 branding:
   icon: "git-pull-request"
@@ -9,7 +9,7 @@ inputs:
     description: "The type of comment. Options: [fmt, init, plan]."
     required: true
   commenter_input:
-    description: "The comment to post from a previous step output."
+    description: "The comment to post from a previous step output. For large outputs, write to a file first and pass the file path."
     required: true
   commenter_exitcode:
     description: "The exit code from a previous step output."
@@ -19,8 +19,5 @@ runs:
   image: "Dockerfile"
   args:
     - ${{ inputs.commenter_type }}
-    - ${{ github.workspace }}/terraform_output.txt
+    - ${{ inputs.commenter_input }}
     - ${{ inputs.commenter_exitcode }}
-  pre:
-    - run: |
-        echo "${{ inputs.commenter_input }}" > ${{ github.workspace }}/terraform_output.txt
