@@ -19,5 +19,8 @@ runs:
   image: "Dockerfile"
   args:
     - ${{ inputs.commenter_type }}
-    - ${{ inputs.commenter_input }}
+    - ${{ github.workspace }}/terraform_output.txt
     - ${{ inputs.commenter_exitcode }}
+  pre:
+    - run: |
+        echo "${{ inputs.commenter_input }}" > ${{ github.workspace }}/terraform_output.txt

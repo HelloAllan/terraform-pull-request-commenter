@@ -29,21 +29,17 @@ fi
 ##################
 # Arg 1 is command
 COMMAND=$1
-# Arg 2 is input. We strip ANSI colours and handle large inputs if needed
-INPUT_RAW="$2"
-# If input is very large (over 100KB), use a temp file
-if [[ ${#INPUT_RAW} -gt 102400 ]]; then
-    echo "Input is very large, using temporary file..."
-    TEMP_FILE=$(mktemp)
-    echo "$INPUT_RAW" | sed 's/\x1b\[[0-9;]*m//g' > "$TEMP_FILE"
-    INPUT=$(cat "$TEMP_FILE")
-    # Clean up temp file on exit
-    trap 'rm -f "$TEMP_FILE"' EXIT
-else
-    INPUT=$(echo "$INPUT_RAW" | sed 's/\x1b\[[0-9;]*m//g')
-fi
+# Arg 2 is input file path
+INPUT_FILE=$2
 # Arg 3 is the Terraform CLI exit code
 EXIT_CODE=$3
+
+# Read input from file
+if [[ ! -f "$INPUT_FILE" ]]; then
+    echo "Input file $INPUT_FILE does not exist."
+    exit 1
+fi
+INPUT=$(cat "$INPUT_FILE" | sed 's/\x1b\[[0-9;]*m//g')
 
 # Read TF_WORKSPACE environment variable or use "default"
 WORKSPACE=${TF_WORKSPACE:-default}
