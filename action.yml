@@ -15,13 +15,9 @@ inputs:
     description: "The exit code from a previous step output."
     required: true
 runs:
-  using: "composite"
-  steps:
-    - name: Write input to file
-      shell: bash
-      run: |
-        echo "${{ inputs.commenter_input }}" > /tmp/terraform_output.txt
-    - name: Run commenter
-      uses: docker://Dockerfile
-      with:
-        args: ${{ inputs.commenter_type }} /tmp/terraform_output.txt ${{ inputs.commenter_exitcode }}
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.commenter_type }}
+    - ${{ inputs.commenter_input }}
+    - ${{ inputs.commenter_exitcode }}
