@@ -21,7 +21,3 @@ runs:
     - ${{ inputs.commenter_type }}
     - ${{ inputs.input_file }}
     - ${{ inputs.commenter_exitcode }}
-  env:
-    GITHUB_TOKEN: ${{ github.token }}
-  volumes:
-    - ${{ inputs.input_file }}:/github/workspace/input_file
