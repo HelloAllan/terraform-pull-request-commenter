@@ -25,12 +25,15 @@ This action can only be run after a Terraform `fmt`, `init`, `plan` or `validate
   run: |
     terraform plan -out workspace.plan > plan.txt
 
-- name: Post Plan
-  if: always() && github.ref != 'refs/heads/master' && (steps.plan.outcome == 'success' || steps.plan.outcome == 'failure')
-  uses: sheeeng/terraform-pull-request-commenter@v1
+- name: Save plan output to file
+  run: |
+    echo "${{ steps.plan.outputs.output }}" > plan_output.txt
+
+- name: Comment on PR
+  uses: your-org/terraform-pull-request-commenter@v1
   with:
     commenter_type: plan
-    commenter_input: ${{ format('{0}{1}', steps.plan.outputs.stdout, steps.plan.outputs.stderr) }}
+    input_file: plan_output.txt
     commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
 ```
 
@@ -56,7 +59,7 @@ For smaller outputs, you can use the output directly:
 | Name                 | Requirement | Description                                                       |
 | -------------------- | ----------- | ----------------------------------------------------------------- |
 | `commenter_type`     | _required_  | The type of comment. Options: [`fmt`, `init`, `plan`, `validate`] |
-| `commenter_input`    | _required_  | The comment to post from a previous step output. For large outputs, write to a file first and pass the file path. |
+| `input_file`         | _required_  | The path to the file containing the comment to post.               |
 | `commenter_exitcode` | _required_  | The exit code from a previous step output.                        |
 
 ### Environment Variables
