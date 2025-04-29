@@ -29,10 +29,19 @@ fi
 ##################
 # Arg 1 is command
 COMMAND=$1
-# Arg 2 is input. We strip ANSI colours and write to a temp file to handle large inputs
-TEMP_FILE=$(mktemp)
-echo "$2" | sed 's/\x1b\[[0-9;]*m//g' > "$TEMP_FILE"
-INPUT=$(cat "$TEMP_FILE")
+# Arg 2 is input. We strip ANSI colours and handle large inputs if needed
+INPUT_RAW="$2"
+# If input is very large (over 100KB), use a temp file
+if [[ ${#INPUT_RAW} -gt 102400 ]]; then
+    echo "Input is very large, using temporary file..."
+    TEMP_FILE=$(mktemp)
+    echo "$INPUT_RAW" | sed 's/\x1b\[[0-9;]*m//g' > "$TEMP_FILE"
+    INPUT=$(cat "$TEMP_FILE")
+    # Clean up temp file on exit
+    trap 'rm -f "$TEMP_FILE"' EXIT
+else
+    INPUT=$(echo "$INPUT_RAW" | sed 's/\x1b\[[0-9;]*m//g')
+fi
 # Arg 3 is the Terraform CLI exit code
 EXIT_CODE=$3
 
@@ -55,9 +64,6 @@ CONTENT_HEADER="Content-Type: application/json"
 
 PR_COMMENTS_URL=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
 PR_COMMENT_URI=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
-
-# Clean up temp file on exit
-trap 'rm -f "$TEMP_FILE"' EXIT
 
 ##############
 # Handler: fmt
